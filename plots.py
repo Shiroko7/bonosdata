@@ -71,7 +71,7 @@ def montos_time_series(df, start_date, end_date, moneda):
 
 def clp_to_fxdiv01(row, usdclp):
 
-    fx = usdclp[usdclp['Date'] == row['Fecha']]['Price']
+    fx = usdclp[usdclp['Fecha'] == row['Fecha']]['Precio']
     if fx is not None and len(fx) != 0:
         return 0.0001 * row['Duration'] * row['Monto'] / fx.squeeze()
     else:

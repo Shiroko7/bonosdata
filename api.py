@@ -36,6 +36,13 @@ class IRF(base):
     Familia = Column(String)
 
 
+class USDCLP(base):
+    __tablename__ = 'usdclp'
+    index = Column(Integer, autoincrement=True, primary_key=True)
+    Fecha = Column(DateTime)
+    Precio = Column(Float)
+
+
 # create session
 Session = sessionmaker(database)
 session = Session()
@@ -101,6 +108,9 @@ def query_by_daterange(label, start_date, end_date):
         input_rows = session.query(IRF).filter(
             IRF.Fecha.between(start_date, end_date))
 
+    elif label == 'usdclp':
+        input_rows = session.query(USDCLP).filter(
+            USDCLP.Fecha.between(start_date, end_date))
     else:
         return None
 
