@@ -1,4 +1,4 @@
-from api import upload_to_sql
+from api import upload_to_sql_iif, upload_to_sql_irf
 
 
-upload_to_sql()
+upload_to_sql_iif()

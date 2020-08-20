@@ -17,6 +17,125 @@ import numpy as np
 import plotly
 import plotly.graph_objects as go
 
+# IIF
+
+
+def moving_average(df, start_date, end_date, moneda, window=20):
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    df['Fecha'] = pd.to_datetime(df['Fecha'])
+    mask = (df['Fecha'] >= start_date) & (df['Fecha'] <= end_date)
+    df = df.loc[mask]
+
+    if moneda == 'CLP':
+        df = df[df['Moneda'] == 'CH$']
+    elif moneda == 'USD':
+        df = df[df['Moneda'] == 'UD']
+    elif moneda == 'UF':
+        df = df[df['Moneda'] == 'UF']
+
+    df = df.groupby(['TipoEmisor', 'Fecha'])['Rescate'].sum().reset_index()
+
+    emisores = df['TipoEmisor'].unique()
+
+# .rolling(window).mean().loc[window:]
+    fig = go.Figure()
+    for emisor in emisores:
+        fig.add_trace(go.Scatter(x=df[df['TipoEmisor'] == emisor]['Fecha'][window:],
+                                 y=df[df['TipoEmisor'] == emisor]['Rescate'].rolling(window).mean().loc[window:], name=emisor))
+
+    # formatear fecha
+    #start_date = start_date.strftime('%d %B %Y')
+    #end_date = end_date.strftime('%d %B %Y')
+
+    fig.update_layout(yaxis={'title': moneda},
+                      title='Media Móvil: ' + moneda)
+    return fig
+
+
+def usd_to_clp(row, usdclp):
+    if row['Moneda'] == 'UD':
+        fx = usdclp[usdclp['Fecha'] == row['Fecha']]['Precio']
+        if fx is not None and len(fx) != 0:
+            return row['Captacion'] * fx.squeeze()
+        else:
+            return row['Captacion'] * 820
+    else:
+        return row['Captacion']
+
+
+def percentage_series(df, usdclp, start_date, end_date):
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    df['Fecha'] = pd.to_datetime(df['Fecha'])
+    mask = (df['Fecha'] >= start_date) & (df['Fecha'] <= end_date)
+    df = df.loc[mask]
+
+    df = df.groupby(['Fecha', 'Moneda'])['Captacion'].sum().reset_index()
+
+    df['Captacion'] = df.apply(lambda row: usd_to_clp(row, usdclp), axis=1)
+
+    monedas = df['Moneda'].unique()
+
+    df_total = df[['Fecha', 'Captacion']]
+
+    df_total = df_total.resample(
+        'W-Mon', label='left', on='Fecha').sum().reset_index()
+
+    fig = go.Figure()
+    for moneda in monedas:
+        df_mone = df[df['Moneda'] == moneda].resample(
+            'W-Mon', label='left', on='Fecha').sum().reset_index()
+        if not df_mone.empty:
+            df_mone['Captacion'] = df_mone['Captacion'] / \
+                df_total['Captacion'] * 100
+
+            fig.add_trace(
+                go.Bar(x=df_mone['Fecha'], y=df_mone['Captacion'], name=moneda))
+
+    # Change the bar mode
+    fig.update_layout(barmode='group')
+    # formatear fecha
+    #start_date = start_date.strftime('%d %B %Y')
+    #end_date = end_date.strftime('%d %B %Y')
+
+    fig.update_layout(yaxis=dict(ticksuffix="%", range=[
+                      0, 100]), title='Porcentaje transado en disintas monedas')
+
+    return fig
+
+
+def interest_series(df, start_date, end_date):
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    df['Fecha'] = pd.to_datetime(df['Fecha'])
+    mask = (df['Fecha'] >= start_date) & (df['Fecha'] <= end_date)
+    df = df.loc[mask]
+
+    df = df[df['TipoEmisor'] != 'Sociedades']
+
+    df = df.groupby(['TipoEmisor', 'Fecha'])['Tasa'].mean().reset_index()
+
+    fig = go.Figure()
+
+    emisores = df['TipoEmisor'].unique()
+
+    fig = go.Figure()
+    for emisor in emisores:
+        df_emi = df[df['TipoEmisor'] == emisor]
+        fig.add_trace(go.Scatter(
+            x=df_emi['Fecha'], y=df_emi['Tasa'], name=emisor))
+
+    # formatear fecha
+    #start_date = start_date.strftime('%d %B %Y')
+    #end_date = end_date.strftime('%d %B %Y')
+
+    fig.update_layout(title='Serie de tiempo tasas')
+
+    return fig
+
+# IRF
+
 
 def usdclp_fx():
     req = Request('https://www.investing.com/currencies/usd-clp-historical-data',
