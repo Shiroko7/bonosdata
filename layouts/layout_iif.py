@@ -6,7 +6,7 @@ from datetime import date, timedelta, datetime, time
 import pandas as pd
 import time
 
-start_date = date(2020, 3, 1)
+start_date = date(2020, 4, 1)
 end_date = date(2020, 6, 11)
 
 # dataframes
