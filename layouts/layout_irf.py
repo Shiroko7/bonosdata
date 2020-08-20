@@ -8,7 +8,7 @@ from plots import fx_dv01_participacion_reajuste
 import time
 
 
-start_date = date(2020, 1, 1)
+start_date = date(2020, 3, 1)
 end_date = date(2020, 6, 11)
 
 #t0 = time.time()
