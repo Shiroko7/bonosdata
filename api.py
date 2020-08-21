@@ -18,6 +18,9 @@ from sqlalchemy.orm import sessionmaker
 
 # conectarse a la base de datos
 # cambiar esto por un log in con input de usuario
+
+# engine://user:password@host:5432/database
+
 database = create_engine(
     'postgres://ywbhjstvlwwguj:4169cd9bb75716133a084e53deb4481699ec6cdc5c2d253af098ffb00fc77457@ec2-18-211-48-247.compute-1.amazonaws.com:5432/dc69t4t9dl57ao')
 base = declarative_base()
@@ -120,10 +123,10 @@ def upload_to_sql_iif():
             print("No data reportada en:", dates[i])
 
 
-def upload_to_sql_irf():  # start_date,end_date = None):
+def upload_to_sql_irf(archivo):  # start_date,end_date = None):
     ##### IRF #####
     print("Preparando data IRF...")
-    df_irf = pd.read_csv('BDirf_filter.csv', delimiter=',')
+    df_irf = pd.read_csv(archivo, delimiter=',')
     IRF_columns = ['Instrumento', 'Reaj',
                    'Duration', 'Monto', 'Fecha', 'Familia']
     df_irf = df_irf[IRF_columns]
