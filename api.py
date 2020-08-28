@@ -18,8 +18,8 @@ from sqlalchemy.orm import sessionmaker
 
 # conectarse a la base de datos
 # cambiar esto por un log in con input de usuario
-
-# engine://user:password@host:5432/database
+#
+# URI = engine://user:password@host:5432/database
 
 database = create_engine(
     'postgres://ywbhjstvlwwguj:4169cd9bb75716133a084e53deb4481699ec6cdc5c2d253af098ffb00fc77457@ec2-18-211-48-247.compute-1.amazonaws.com:5432/dc69t4t9dl57ao')
@@ -37,17 +37,6 @@ class IRF(base):
     Monto = Column(Float)
     Fecha = Column(DateTime)
     Familia = Column(String)
-
-
-class IIF(base):
-    __tablename__ = 'iif'
-    index = Column(Integer, autoincrement=True, primary_key=True)
-    Rescate = Column(Float)
-    Moneda = Column(String)
-    Tasa = Column(Float)
-    Captacion = Column(Float)
-    TipoEmisor = Column(String)
-    Fecha = Column(DateTime)
 
 
 class USDCLP(base):
@@ -72,55 +61,10 @@ def delete_by_date(table, fecha):
     # estos son mensuales
     if table == 'IRF':
         input_rows = session.query(IRF).filter(IRF.Fecha == fecha).delete()
-    elif table == 'IIF':
-        input_rows = session.query(IIF).filter(IIF.Fecha == fecha).delete()
 
     session.commit()
 
 # UPLOAD DATA
-
-
-def upload_to_sql_iif():
-    ##### IIF #####
-    print("Preparando data IIF...")
-    df_iif = pd.read_excel('iif.xls', header=0, sheet_name='tradesTable')
-    IIF_columns = ['Rescate', 'Moneda',
-                   'Tasa', 'Captación', 'Tipo Emisor', 'Fecha']
-    df_iif = df_iif[IIF_columns]
-    df_iif.columns = ['Rescate', 'Moneda',
-                      'Tasa', 'Captacion', 'TipoEmisor', 'Fecha']
-    df_iif['Fecha'] = pd.to_datetime(df_iif['Fecha'], format="%Y-%m-%d")
-    df_iif['Fecha'] = df_iif['Fecha'].dt.date
-
-    #df = df[(df['Fecha'] > date(2020, 2, 28))]
-
-    start_date = min(df_iif['Fecha'])
-    end_date = max(df_iif['Fecha'])
-
-    dates = list(rrule(DAILY, dtstart=start_date, until=end_date))
-    print("Empezando upload...")
-    for i in range(len(dates)):
-        df_i = df_iif[df_iif['Fecha'] == dates[i].date()]
-        if not df_i.empty:
-            delete_by_date('IIF', dates[i])
-            df_i.to_sql("iif",
-                        database,
-                        if_exists='append',
-                        schema='public',
-                        index=False,
-                        chunksize=500,
-                        dtype={
-                            "Rescate": Float,
-                            "Moneda": String,
-                            "Tasa": Float,
-                            "Captacion": Float,
-                            "TipoEmisor": String,
-                            "Fecha": DateTime}
-                        )
-            session.commit()
-            print("Data subida hasta", dates[i])
-        else:
-            print("No data reportada en:", dates[i])
 
 
 def upload_to_sql_irf(archivo):  # start_date,end_date = None):
@@ -170,9 +114,6 @@ def query_by_daterange(label, start_date, end_date):
     if label == 'irf':
         input_rows = session.query(IRF).filter(
             IRF.Fecha.between(start_date, end_date))
-    elif label == 'iif':
-        input_rows = session.query(IIF).filter(
-            IIF.Fecha.between(start_date, end_date))
     elif label == 'usdclp':
         input_rows = session.query(USDCLP).filter(
             USDCLP.Fecha.between(start_date, end_date))

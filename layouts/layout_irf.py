@@ -8,8 +8,8 @@ from plots import fx_dv01_participacion_reajuste
 import time
 
 
-start_date = date(2020, 4, 1)
-end_date = date(2020, 6, 11)
+end_date = date.today()
+start_date = end_date - timedelta(days=6*30)
 
 #t0 = time.time()
 df_irf = query_by_daterange('irf', start_date, end_date)
@@ -18,10 +18,6 @@ df_irf = query_by_daterange('irf', start_date, end_date)
 
 usdclp = query_by_daterange("usdclp", start_date, end_date)
 
-
-fig_reaj = fx_dv01_participacion_reajuste(df_irf, usdclp, start_date, end_date)
-
-
 # dataframes
 
 header = html.Div(
@@ -29,7 +25,7 @@ header = html.Div(
         html.Div(
             [
                 html.H2('IRF Data',),
-                html.H6('Versión Alpha 1.0.0', className='no-print'),
+                html.H6('Versión 2.0.1', className='no-print'),
             ], className='twelve columns', style={'text-align': 'center'}
         )
     ], className='row',
@@ -41,6 +37,64 @@ layout_datos_irf = html.Div([
     html.Div(
         [
             dcc.Dropdown(
+                id="dropdown_bar",
+                options=[
+                    {'label': 'CLP', 'value': 'CLP'},
+                    {'label': 'UF', 'value': 'UF'},
+                ],
+                value='CLP',
+                className="dcc_control no-print"
+            ),
+            html.Label('Seleccionar rango de data',
+                       className="control_label"),
+            dcc.DatePickerRange(
+                id='daterange_bar',
+                first_day_of_week=1,
+                min_date_allowed=datetime(2020, 1, 1),
+                max_date_allowed=end_date+timedelta(days=1),
+                initial_visible_month=end_date,
+                start_date=start_date,
+                end_date=end_date,
+                display_format='M-D-Y',
+            ),
+            dcc.Checklist(id='check_bar', options=[
+                {'label': ' Mostrar acumulado', 'value': 'True'}], className="dcc_control no-print"),
+            dcc.Loading(id="loading-icon_bar",
+                        children=[dcc.Graph(id='bar')], type="circle"),
+        ], className='pretty_container'
+    ),
+    html.Div(
+        [
+            dcc.Dropdown(
+                id="dropdown_f-bonos",
+                options=[
+                    {'label': 'CLP', 'value': 'CLP'},
+                    {'label': 'UF', 'value': 'UF'},
+                ],
+                value='CLP',
+                className="dcc_control no-print"
+            ),
+            html.Label('Seleccionar rango de data',
+                       className="control_label"),
+            dcc.DatePickerRange(
+                id='daterange_bonos',
+                first_day_of_week=1,
+                min_date_allowed=datetime(2020, 1, 1),
+                max_date_allowed=end_date+timedelta(days=1),
+                initial_visible_month=end_date,
+                start_date=start_date,
+                end_date=end_date,
+                display_format='M-D-Y',
+            ),
+            dcc.Checklist(id='check_f-bonos', options=[
+                          {'label': ' Mostrar en porcentaje', 'value': 'True'}], className="dcc_control no-print"),
+            dcc.Loading(id="loading-icon_f-bonos",
+                        children=[dcc.Graph(id='f-bonos')], type="circle"),
+        ], className='pretty_container'
+    ),
+    html.Div(
+        [
+            dcc.Dropdown(
                 id="dropdown_f-montos",
                 options=[
                     {'label': 'CLP', 'value': 'CLP'},
@@ -48,6 +102,18 @@ layout_datos_irf = html.Div([
                 ],
                 value='CLP',
                 className="dcc_control no-print"
+            ),
+            html.Label('Seleccionar rango de data',
+                       className="control_label"),
+            dcc.DatePickerRange(
+                id='daterange_montos',
+                first_day_of_week=1,
+                min_date_allowed=datetime(2020, 1, 1),
+                max_date_allowed=end_date+timedelta(days=1),
+                initial_visible_month=end_date,
+                start_date=start_date,
+                end_date=end_date,
+                display_format='M-D-Y',
             ),
             dcc.Loading(id="loading-icon_f-montos",
                         children=[dcc.Graph(id='f-montos')], type="circle"),
@@ -64,31 +130,39 @@ layout_datos_irf = html.Div([
                 value='CLP',
                 className="dcc_control no-print"
             ),
+            html.Label('Seleccionar rango de data',
+                       className="control_label"),
+            dcc.DatePickerRange(
+                id='daterange_dv01',
+                first_day_of_week=1,
+                min_date_allowed=datetime(2020, 1, 1),
+                max_date_allowed=end_date+timedelta(days=1),
+                initial_visible_month=end_date,
+                start_date=start_date,
+                end_date=end_date,
+                display_format='M-D-Y',
+            ),
             dcc.Loading(id="loading-icon_f-dv01",
                         children=[dcc.Graph(id='f-dv01')], type="circle"),
         ], className='pretty_container'
     ),
+
     html.Div(
         [
-            dcc.Dropdown(
-                id="dropdown_f-bonos",
-                options=[
-                    {'label': 'CLP', 'value': 'CLP'},
-                    {'label': 'UF', 'value': 'UF'},
-                ],
-                value='CLP',
-                className="dcc_control no-print"
+            html.Label('Seleccionar rango de data',
+                       className="control_label"),
+            dcc.DatePickerRange(
+                id='daterange_reaj',
+                first_day_of_week=1,
+                min_date_allowed=datetime(2020, 1, 1),
+                max_date_allowed=end_date+timedelta(days=1),
+                initial_visible_month=end_date,
+                start_date=start_date,
+                end_date=end_date,
+                display_format='M-D-Y',
             ),
-            dcc.Checklist(id='check_f-bonos', options=[
-                          {'label': ' Mostrar en porcentaje', 'value': 'True'}], className="dcc_control no-print"),
-            dcc.Loading(id="loading-icon_f-bonos",
-                        children=[dcc.Graph(id='f-bonos')], type="circle"),
-        ], className='pretty_container'
-    ),
-    html.Div(
-        [
             dcc.Loading(id="loading-icon_f-reaj",
-                        children=[dcc.Graph(id='f-reaj', figure=fig_reaj)], type="circle"),
+                        children=[dcc.Graph(id='f-reaj')], type="circle"),
         ], className='pretty_container'
     ),
 ])

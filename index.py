@@ -5,6 +5,8 @@ from dash.dependencies import Input, Output
 from app import app
 from app import server
 
+
+from layouts.layout_irf import layout_datos_irf
 import callbacks
 
 
@@ -18,11 +20,7 @@ app.layout = html.Div([
               [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/' or pathname == '/irf':
-        from layouts.layout_irf import layout_datos_irf
         return layout_datos_irf
-    elif pathname == '/iif':
-        from layouts.layout_iif import layout_datos_iif
-        return layout_datos_iif
     else:
         return '404'
 
