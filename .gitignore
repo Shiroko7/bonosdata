@@ -2,7 +2,7 @@ venv
 *.pyc
 .DS_Store
 .env
-test.pys
+test.py
 *.xlsx
 *.csv
 *.xls

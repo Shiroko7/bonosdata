@@ -70,7 +70,7 @@ def delete_by_date(table, fecha):
 def upload_to_sql_irf(archivo):  # start_date,end_date = None):
     ##### IRF #####
     print("Preparando data IRF...")
-    df_irf = pd.read_csv(archivo, delimiter=',')
+    df_irf = pd.read_excel(archivo)
     IRF_columns = ['Instrumento', 'Reaj',
                    'Duration', 'Monto', 'Fecha', 'Familia']
     df_irf = df_irf[IRF_columns]
