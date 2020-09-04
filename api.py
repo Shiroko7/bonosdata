@@ -106,6 +106,7 @@ def upload_to_sql_irf(archivo):  # start_date,end_date = None):
             print("Data subida hasta", dates[i])
         else:
             print("No data reportada en:", dates[i])
+    print("Upload terminado.")
 
 
 # READ
