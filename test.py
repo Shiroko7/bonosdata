@@ -8,29 +8,26 @@ import shutil
 import csv
 
 
-df = pd.read_csv('BDirf.csv', delimiter=',')
-IRF_columns = ['Instrumento', 'Reaj', 'Duration', 'Monto', 'Fecha', 'Familia']
-df = df[IRF_columns]
-df['Fecha'] = pd.to_datetime(df['Fecha'], format="%Y-%m-%d")
-df['Fecha'] = df['Fecha'].dt.date
-#df = df[df['Fecha'] >= date(2020, 1, 1)]
-df.to_csv('BDirf_filter.csv', index=False)
-fserie = pd.read_excel('series.xls', header=0, sheet_name='tbviewDataGrid')
-filename = 'BDirf.csv'
-tempfile = NamedTemporaryFile(mode='w', delete=False)
+def add_familia(archivo):
+    print("Leyendo", archivo, "...")
+    df = pd.read_excel(archivo, header=0, sheet_name='Hoja1')
+    IRF_columns = ['Instrumento', 'Reaj',
+                   'Duration', 'Monto', 'Fecha', 'Familia']
+    df = df[IRF_columns]
+    df['Fecha'] = pd.to_datetime(df['Fecha'], format="%Y-%m-%d")
+    df['Fecha'] = df['Fecha'].dt.date
 
-fields = ['V', 'OpV', 'C', 'OpC', 'Rte', 'Folio', 'Instrumento', 'Liq', 'D', 'Cantidad',
-          'Reaj', 'Plazo', 'Duration', 'Precio', 'TIR', 'Monto', 'Hora', 'Fecha', 'Familia']
+    fserie = pd.read_excel('series.xls', header=0, sheet_name='tbviewDataGrid')
 
-i = 0
-with open(filename, 'r') as csvfile, tempfile:
-    reader = csv.DictReader(csvfile, fieldnames=fields)
-    writer = csv.DictWriter(tempfile, fieldnames=fields)
-    for row in reader:
-        if i > 0:
-            row['Familia'] = fserie[fserie['Serie'] ==
-                                    row['Instrumento']]['Familia'].squeeze()
-        writer.writerow(row)
-        i = i+1
+    fields = ['V', 'OpV', 'C', 'OpC', 'Rte', 'Folio', 'Instrumento', 'Liq', 'D', 'Cantidad',
+              'Reaj', 'Plazo', 'Duration', 'Precio', 'TIR', 'Monto', 'Hora', 'Fecha', 'Familia']
 
-shutil.move(tempfile.name, filename)
+    print("Agrando columna Familia...")
+    df['Familia'] = df['Familia'].astype(str)
+    for row in df.itertuples():
+        df.at[row.Index, 'Familia'] = fserie[fserie['Serie']
+                                             == row.Instrumento]['Familia'].squeeze()
+
+    df.to_excel(archivo, index=False)
+
+    print("Archivo", archivo, "modificado.")
