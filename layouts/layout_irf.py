@@ -9,7 +9,7 @@ import time
 
 
 end_date = date.today()
-start_date = end_date - timedelta(days=4*30)
+start_date = end_date - timedelta(days=3*30)
 
 #t0 = time.time()
 df_irf = query_by_daterange('irf', start_date, end_date)
