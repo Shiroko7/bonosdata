@@ -5,3 +5,4 @@ venv
 *.xlsx
 *.csv
 *.xls
+scrot.py

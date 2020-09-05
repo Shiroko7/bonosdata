@@ -250,7 +250,7 @@ def bar_bonos(df, usdclp, start_date, end_date, moneda, bonos, acumulado):
     # date filter
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
-    df.loc[:, 'Fecha'] = pd.to_datetime(df['Fecha'])
+    df.loc['Fecha'] = pd.to_datetime(df['Fecha'])
     mask = (df['Fecha'] >= start_date) & (df['Fecha'] <= end_date)
     df = df.loc[mask]
 
@@ -267,17 +267,28 @@ def bar_bonos(df, usdclp, start_date, end_date, moneda, bonos, acumulado):
 
     # bono filter
     ###df = df[df['Instrumento'].isin(bonos)]
-
     df['fx dv01'] = df.apply(lambda row: clp_to_fxdiv01(row, usdclp), axis=1)
-    df = df.groupby(['Instrumento'])['fx dv01'].sum().reset_index()
+
+    df = df[['Instrumento', 'fx dv01']].reset_index(drop=True)
     bonos = df['Instrumento'].unique()
+    x_ = list()
+    y_ = list()
+
+    for bono in bonos:
+        x_.append(bono)
+        value = df[df['Instrumento'] == bono]['fx dv01'].sum()
+        if not isinstance(value, np.float64):
+            if type(value) is float:
+                value = np.float64(value)
+            else:
+                value = value.sum()
+        y_.append(value)
 
     if not acumulado:
         days = np.busday_count(start_date.date(), end_date.date())
-        df['fx dv01'] = df['fx dv01'] / days
-
+        y_ = y_ / days
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=df['Instrumento'], y=df['fx dv01']))
+    fig.add_trace(go.Bar(x=x_, y=y_))
 
     if acumulado:
         fig.update_layout(yaxis=dict(title='DV01'),
@@ -285,5 +296,4 @@ def bar_bonos(df, usdclp, start_date, end_date, moneda, bonos, acumulado):
     else:
         fig.update_layout(yaxis=dict(title='DV01'),
                           title='Promedio de DV01 por bono: ' + moneda)
-
     return fig
